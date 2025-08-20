@@ -1,103 +1,128 @@
-import Image from "next/image";
+import { Response } from "@/components/ai-elements/response";
+
+// import { MarkdownRenderer } from "@/components/markdown-renderer";
+
+const markdownContent = `
+# Heading 1 - Main Title
+
+## Heading 2 - Section Title
+
+### Heading 3 - Subsection
+
+#### Heading 4 - Sub-subsection
+
+##### Heading 5 - Minor heading
+
+###### Heading 6 - Smallest heading
+
+## Typography Examples
+
+This is a **bold text** and this is *italic text*. You can also have ~~strikethrough text~~.
+
+Here's a paragraph with some inline code: \`const greeting = "Hello World";\`
+
+## Lists
+
+### Unordered List (Bullets)
+- First item
+- Second item
+  - Nested item 1
+  - Nested item 2
+    - Deep nested item
+- Third item
+
+### Ordered List (Numbers)
+1. First numbered item
+2. Second numbered item
+   1. Nested numbered item
+   2. Another nested item
+3. Third numbered item
+
+### Task List
+- [x] Completed task
+- [ ] Incomplete task
+- [x] Another completed task
+
+## Code Examples
+
+### JavaScript
+\`\`\`javascript
+const calculateCircleArea = (radius) => {
+  return Math.PI * radius * radius;
+};
+
+console.log(calculateCircleArea(5));
+\`\`\`
+
+### TypeScript
+\`\`\`typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+const createUser = (userData: Omit<User, 'id'>): User => {
+  return {
+    id: Math.random(),
+    ...userData
+  };
+};
+\`\`\`
+
+## Math Equations
+
+### Inline Math
+The famous equation is ( Delta U = Q - W ) discovered by Einstein.
+
+### Display Math
+$$
+L = \\pi r^2
+$$
+
+$$
+x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}
+$$
+
+## Tables
+
+| Name | Age | Profession | Location |
+|------|-----|------------|----------|
+| Aditia | 25 | Full Stack Developer | Indonesia |
+| Aning | 24 | Designer | Indonesia |
+| John | 30 | Product Manager | USA |
+
+## Links and Images
+
+Visit [OpenAI](https://openai.com) for more information.
+
+![Sample Image](https://via.placeholder.com/400x200?text=Sample+Image)
+
+## Blockquotes
+
+> This is a blockquote. It can contain multiple lines
+> and will be styled appropriately with a left border
+> and italic text.
+
+## Horizontal Rule
+
+---
+
+## Mixed Content
+
+You can combine **bold**, *italic*, and \`code\` in the same paragraph. Here's a link to [React documentation](https://react.dev) and some inline math \\(a^2 + b^2 = c^2\\).
+
+### Code without language
+\`\`\`
+This is a code block without specified language
+It will still be formatted nicely
+\`\`\`
+`;
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="min-h-screen container p-5">
+      <Response className="max-w-4xl mx-auto">{markdownContent}</Response>
     </div>
   );
 }

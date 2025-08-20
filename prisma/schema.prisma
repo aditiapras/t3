@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model message_parts {
+  id               String   @id @default(cuid())
+  messageId        String   @default(cuid())
+  type             String
+  text             String
+  reasoning        String
+  toolCallId       String?
+  toolName         String?
+  args             Json?
+  result           Json?
+  status           String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  messagePartId    String   @unique
+  providerMetadata Json?
+  messages         messages @relation(fields: [messageId], references: [messageId], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([type])
+}
+
+model messages {
+  id                String          @id @default(cuid())
+  messageId         String          @unique @default(cuid())
+  threadId          String
+  content           String
+  role              String
+  model             String
+  status            String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  byok              Boolean         @default(false)
+  resumableStreamId String?
+  tokens            Int?
+  tokensPerSecond   Float?
+  timeToFirstToken  Float?
+  attachments       Json            @default("[]")
+  providerMetadata  Json            @default("{}")
+  message_parts     message_parts[]
+  threads           threads         @relation(fields: [threadId], references: [threadId], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([threadId])
+}
+
+model models {
+  id               String   @id @default(cuid())
+  name             String
+  modelId          String   @unique
+  provider         String
+  description      String?
+  isPremium        Boolean  @default(false)
+  supportFile      Boolean  @default(false)
+  supportImage     Boolean  @default(false)
+  supportWebSearch Boolean  @default(false)
+  supportReasoning Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  freeModel        Boolean  @default(false)
+
+  @@index([createdAt])
+  @@index([modelId])
+  @@index([name])
+}
+
+model threads {
+  id               String     @id @default(cuid())
+  threadId         String     @unique @default(uuid())
+  title            String     @default("New Thread")
+  model            String?
+  generationStatus String     @default("pending")
+  visibility       String     @default("private")
+  status           String     @default("active")
+  pinned           Boolean    @default(false)
+  userSetTitle     Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  userId           String?
+  messages         messages[]
+  users            users?     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([threadId])
+  @@index([title])
+}
+
+model users {
+  id        String    @id @default(cuid())
+  clerkId   String    @unique
+  firstName String?
+  lastName  String?
+  email     String?
+  imageUrl  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  tier      String    @default("free")
+  threads   threads[]
+
+  @@index([clerkId])
+}
