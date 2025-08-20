@@ -11,9 +11,9 @@ export const createThread = async (model: string) => {
     data: {
       model,
     },
-    select:{
+    select: {
       threadId: true,
-    }
+    },
   });
 
   console.log("thread create with ID:", create.threadId);
@@ -22,8 +22,7 @@ export const createThread = async (model: string) => {
 };
 
 export const generateTitle = async (threadId: string, prompt: string) => {
-    
-const { text } = await generateText({
+  const { text } = await generateText({
     model: gateway("openai/gpt-4o-mini"),
     prompt,
     system: `\n
@@ -34,16 +33,16 @@ const { text } = await generateText({
           - do not make the title too generic or too short
           - you can use emojis or emoticons if you want
           - if you use emojis, always put emoji at the start of the title`,
-})
+  });
 
-await prisma.threads.update({
+  await prisma.threads.update({
     where: {
-        id: threadId,
+      threadId,
     },
     data: {
-        title: text,
+      title: text,
     },
-})
+  });
 
   revalidatePath(`/chat`);
   revalidatePath(`/chat/${threadId}`);
@@ -51,15 +50,28 @@ await prisma.threads.update({
 };
 
 export const getTitle = async (threadId: string) => {
-    const thread = await prisma.threads.findUnique({
-        where: {
-            threadId: threadId,
-        },
-        select:{
-            title: true,
-        }
-    })
-    console.log("thread title:", thread?.title);
-    if (!thread) return null
-    return thread.title
-}
+  const thread = await prisma.threads.findUnique({
+    where: {
+      threadId,
+    },
+    select: {
+      title: true,
+    },
+  });
+  console.log("thread title:", thread?.title);
+  if (!thread) return null;
+  return thread.title;
+};
+
+export const getThread = async () => {
+  const thread = await prisma.threads.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      threadId: true,
+      title: true,
+    },
+  });
+  return thread;
+};
