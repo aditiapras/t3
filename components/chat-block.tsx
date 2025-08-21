@@ -1,6 +1,7 @@
 "use client";
-import { GlobeIcon, MicIcon } from "lucide-react";
+import { GlobeIcon } from "lucide-react";
 import { useState } from "react";
+import { createThread } from "@/app/chat/actions/actions";
 import {
   PromptInput,
   PromptInputButton,
@@ -14,8 +15,6 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
-
-import { createThread } from "@/lib/actions";
 
 const models = [
   {
@@ -57,7 +56,7 @@ export default function ChatBlock() {
         <div className="p-2 border rounded-2xl bg-gradient-to-b from-border/50 to-muted/20 backdrop-blur-sm">
           <PromptInput
             onSubmit={handleSubmit}
-            className="shadow-none border-border"
+            className="shadow-none border-border/50"
           >
             <PromptInputTextarea
               onChange={(e) => setPrompt(e.target.value)}
@@ -65,11 +64,8 @@ export default function ChatBlock() {
             />
             <PromptInputToolbar>
               <PromptInputTools>
-                <PromptInputButton>
-                  <MicIcon size={16} />
-                </PromptInputButton>
-                <PromptInputButton>
-                  <GlobeIcon size={16} />
+                <PromptInputButton type="button">
+                  <GlobeIcon className="size-4" />
                   <span>Search</span>
                 </PromptInputButton>
                 <PromptInputModelSelect

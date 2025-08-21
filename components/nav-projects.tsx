@@ -1,6 +1,9 @@
 "use client";
 
-import { MoreHorizontal, Pin, TextCursor, Trash2 } from "lucide-react";
+import { Loader2, MoreHorizontal, Pin, TextCursor, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { deleteThread } from "@/app/chat/actions/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,24 +20,35 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useThreads } from "@/lib/useThread";
-import Link from "next/link";
+import { useThreads } from "@/hooks/use-thread";
 
 export function NavProjects() {
   const { isMobile } = useSidebar();
-  const { threads, isLoading } = useThreads();
+  const { threads, isLoading, mutateThreads } = useThreads();
+  const { id } = useParams();
 
-  if (isLoading) return <p>Loading…</p>;
+  const handleDeleteThread = async (threadId: string) => {
+    await deleteThread(threadId, id);
+    mutateThreads();
+  };
+
+  if (isLoading) return null;
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Threads</SidebarGroupLabel>
       <SidebarMenu>
-        {threads.map((item) => (
-          <SidebarMenuItem key={item.threadId}>
+        {threads.map(({ threadId, title }) => (
+          <SidebarMenuItem key={threadId}>
             <SidebarMenuButton asChild>
-              <Link href={`/chat/${item.threadId}`}>
-                <span>{item.title}</span>
+              <Link href={`/chat/${threadId}`}>
+                {title === "New Thread" ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="animate-spin size-4" /> New Thread
+                  </span>
+                ) : (
+                  <span className="">{title}</span>
+                )}
               </Link>
             </SidebarMenuButton>
             <DropdownMenu>
@@ -58,9 +72,15 @@ export function NavProjects() {
                   <span>Rename Thread</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Trash2 className="text-muted-foreground" />
-                  <span>Delete Thread</span>
+                <DropdownMenuItem variant="destructive" asChild>
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 w-full"
+                    onClick={() => handleDeleteThread(threadId)}
+                  >
+                    <Trash2 className="text-muted-foreground" />
+                    <span>Delete Thread</span>
+                  </button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

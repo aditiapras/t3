@@ -3,8 +3,9 @@
 import { gateway } from "@ai-sdk/gateway";
 import { generateText } from "ai";
 import { revalidatePath } from "next/cache";
+import type { ParamValue } from "next/dist/server/request/params";
 import { redirect } from "next/navigation";
-import { prisma } from "./prisma";
+import { prisma } from "../../../lib/prisma";
 
 export const createThread = async (model: string) => {
   const create = await prisma.threads.create({
@@ -19,6 +20,24 @@ export const createThread = async (model: string) => {
   console.log("thread create with ID:", create.threadId);
 
   return redirect(`/chat/${create.threadId}`);
+};
+
+export const deleteThread = async (
+  threadId: string,
+  currentPath: ParamValue,
+) => {
+  await prisma.threads.delete({
+    where: {
+      threadId,
+    },
+  });
+  console.log("thread deleted with ID:", threadId);
+  revalidatePath(`/chat`);
+  revalidatePath(`/chat/${threadId}`);
+
+  if (threadId === currentPath) {
+    redirect(`/chat`);
+  }
 };
 
 export const generateTitle = async (threadId: string, prompt: string) => {
@@ -58,7 +77,6 @@ export const getTitle = async (threadId: string) => {
       title: true,
     },
   });
-  console.log("thread title:", thread?.title);
   if (!thread) return null;
   return thread.title;
 };
@@ -74,4 +92,19 @@ export const getThread = async () => {
     },
   });
   return thread;
+};
+
+export const getThreadMessage = async(threadId: string) => {
+  const threadMessage = await prisma.messages.findMany({
+    where: {
+      threadId,
+    },
+    include:{
+      parts:true
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
+  return threadMessage;
 };

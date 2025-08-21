@@ -2,7 +2,7 @@
 "use client";
 import { useEffect } from "react";
 import { useSWRConfig } from "swr";
-import { generateTitle } from "@/lib/actions";
+import { generateTitle } from "@/app/chat/actions/actions";
 
 interface Props {
   threadId: string;

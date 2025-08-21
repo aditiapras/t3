@@ -8,9 +8,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model message_parts {
+model MessageParts {
   id               String   @id @default(cuid())
-  messageId        String   @default(cuid())
+  messagePartId    String   @unique @default(cuid())
+  messageId        String
   type             String
   text             String
   reasoning        String
@@ -21,39 +22,40 @@ model message_parts {
   status           String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  messagePartId    String   @unique
   providerMetadata Json?
-  messages         messages @relation(fields: [messageId], references: [messageId], onDelete: Cascade)
+  messages         Messages @relation(fields: [messageId], references: [messageId], onDelete: Cascade)
 
   @@index([messageId])
   @@index([type])
+  @@map("message_parts")
 }
 
-model messages {
-  id                String          @id @default(cuid())
-  messageId         String          @unique @default(cuid())
+model Messages {
+  id                String         @id @default(cuid())
+  messageId         String         @unique @default(cuid())
   threadId          String
   content           String
   role              String
   model             String
   status            String
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  byok              Boolean         @default(false)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  byok              Boolean        @default(false)
   resumableStreamId String?
   tokens            Int?
   tokensPerSecond   Float?
   timeToFirstToken  Float?
-  attachments       Json            @default("[]")
-  providerMetadata  Json            @default("{}")
-  message_parts     message_parts[]
-  threads           threads         @relation(fields: [threadId], references: [threadId], onDelete: Cascade)
+  attachments       Json           @default("[]")
+  providerMetadata  Json           @default("{}")
+  parts             MessageParts[]
+  threads           Threads        @relation(fields: [threadId], references: [threadId], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([threadId])
+  @@map("messages")
 }
 
-model models {
+model Models {
   id               String   @id @default(cuid())
   name             String
   modelId          String   @unique
@@ -71,9 +73,10 @@ model models {
   @@index([createdAt])
   @@index([modelId])
   @@index([name])
+  @@map("models")
 }
 
-model threads {
+model Threads {
   id               String     @id @default(cuid())
   threadId         String     @unique @default(uuid())
   title            String     @default("New Thread")
@@ -85,16 +88,17 @@ model threads {
   userSetTitle     Boolean    @default(false)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
+  messages         Messages[]
+  User             Users?     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
   userId           String?
-  messages         messages[]
-  users            users?     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([threadId])
   @@index([title])
+  @@map("threads")
 }
 
-model users {
+model Users {
   id        String    @id @default(cuid())
   clerkId   String    @unique
   firstName String?
@@ -104,7 +108,8 @@ model users {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   tier      String    @default("free")
-  threads   threads[]
+  threads   Threads[]
 
   @@index([clerkId])
+  @@map("users")
 }

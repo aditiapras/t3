@@ -1,7 +1,9 @@
 "use client";
-import { useRef, useState, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
 import { GlobeIcon, MicIcon } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { generateTitle } from "@/app/chat/actions/actions";
 import {
   Conversation,
   ConversationContent,
@@ -23,14 +25,12 @@ import {
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
 import { Response } from "@/components/ai-elements/response";
+import { useThreadMessage, useThreads } from "@/hooks/use-thread";
 import {
   Reasoning,
   ReasoningContent,
   ReasoningTrigger,
 } from "./ai-elements/reasoning";
-import { useParams } from "next/navigation";
-import { generateTitle } from "@/lib/actions";
-import { useThreads } from "@/lib/useThread";
 
 const models = [
   {
@@ -58,21 +58,23 @@ const models = [
 export default function ThreadBlock() {
   const [prompt, setPrompt] = useState("");
   const [model, setModel] = useState<string>(models[0].id);
-  const { messages, sendMessage, status } = useChat();
+  const { messages, sendMessage, status, setMessages } = useChat();
   const hasInitialized = useRef(false);
   const { id } = useParams();
   const { mutateThreads } = useThreads();
+  const { messages: threadMessage, isLoading: isLoadingThreadMessage } = useThreadMessage(id as string);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (prompt.trim()) {
-      sendMessage({ text: prompt }, { body: { model } });
+      sendMessage({ text: prompt }, { body: { model, threadId: id } });
       setPrompt("");
     }
   };
 
   useEffect(() => {
     if (!hasInitialized.current) {
+      mutateThreads();
       const initialMessage = localStorage.getItem("prompt");
       const initialModel = localStorage.getItem("model");
       if (initialMessage && initialModel && id) {
@@ -80,7 +82,7 @@ export default function ThreadBlock() {
         setModel(initialModel);
         sendMessage(
           { text: initialMessage },
-          { body: { model: initialModel } }
+          { body: { model: initialModel, threadId: id } },
         );
         generateTitle(id as string, initialMessage).then(() => {
           mutateThreads();
@@ -88,49 +90,68 @@ export default function ThreadBlock() {
         setPrompt("");
       }
       hasInitialized.current = true;
+      localStorage.removeItem("prompt");
+      localStorage.removeItem("model");
     }
   }, [sendMessage, id, mutateThreads]);
 
+  // Load existing thread messages when threadMessage data is available
+  const hasLoadedMessages = useRef(false);
+
+  useEffect(() => {
+    if (threadMessage && threadMessage.length > 0 && !isLoadingThreadMessage && !hasLoadedMessages.current) {
+      setMessages(threadMessage);
+      hasLoadedMessages.current = true;
+    }
+  }, [threadMessage, isLoadingThreadMessage, setMessages]);
+
+  // Reset the loaded flag when thread ID changes
+  useEffect(() => {
+    hasLoadedMessages.current = false;
+  }, []);
+
+  if (isLoadingThreadMessage) {
+    return null
+  }
+
   return (
     <div className="flex flex-col flex-1 h-full justify-center">
-      <div className="flex flex-col h-full">
-        <Conversation>
-          <ConversationContent>
-            {messages.map((message) => (
-              <Message from={message.role} key={message.id}>
-                <MessageContent>
-                  {message.parts.map((part, i) => {
-                    switch (part.type) {
-                      case "text": // we don't use any reasoning or tool calls in this example
-                        return (
-                          <Response key={`${message.id}-${i}`}>
-                            {part.text}
-                          </Response>
-                        );
-                      case "reasoning": // we don't use any reasoning or tool calls in this example
-                        return (
-                          <Reasoning key={`${message.id}-${i}`}>
-                            <ReasoningTrigger />
-                            <ReasoningContent>{part.text}</ReasoningContent>
-                          </Reasoning>
-                        );
-                      default:
-                        return null;
-                    }
-                  })}
-                </MessageContent>
-              </Message>
-            ))}
-            {status === "streaming" && <Loader className="px-4" />}
-          </ConversationContent>
-          <ConversationScrollButton />
-        </Conversation>
-      </div>
+      <Conversation>
+        <ConversationContent>
+          {messages.map((message) => (
+            <Message from={message.role} key={message.id}>
+              <MessageContent>
+                {message.parts.map((part, i) => {
+                  switch (part.type) {
+                    case "text": // we don't use any reasoning or tool calls in this example
+                      return (
+                        <Response key={`${message.id}-${i}`}>
+                          {part.text}
+                        </Response>
+                      );
+                    case "reasoning": // we don't use any reasoning or tool calls in this example
+                      return (
+                        <Reasoning key={`${message.id}-${i}`}>
+                          <ReasoningTrigger />
+                          <ReasoningContent>{part.text}</ReasoningContent>
+                        </Reasoning>
+                      );
+                    default:
+                      return null;
+                  }
+                })}
+              </MessageContent>
+            </Message>
+          ))}
+          {status === "streaming" && <Loader className="px-4" />}
+        </ConversationContent>
+        <ConversationScrollButton className="absolute top-4 left-[50%] translate-x-[-50%] rounded-full" />
+      </Conversation>
       <div className="sticky bottom-0 px-3 md:px-0">
-        <div className="p-2 border rounded-2xl bg-gradient-to-b from-border/50 to-muted/20 backdrop-blur-sm">
+        <div className="p-2 border rounded-t-2xl bg-gradient-to-b from-border/50 to-muted/20 backdrop-blur-md">
           <PromptInput
             onSubmit={handleSubmit}
-            className="shadow-none border-border"
+            className="shadow-none border-border/50"
           >
             <PromptInputTextarea
               onChange={(e) => setPrompt(e.target.value)}
@@ -166,7 +187,7 @@ export default function ThreadBlock() {
                   </PromptInputModelSelectContent>
                 </PromptInputModelSelect>
               </PromptInputTools>
-              <PromptInputSubmit disabled={!prompt} />
+              <PromptInputSubmit disabled={!prompt || !model} />
             </PromptInputToolbar>
           </PromptInput>
         </div>
