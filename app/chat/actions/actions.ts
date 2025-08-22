@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import type { ParamValue } from "next/dist/server/request/params";
 import { redirect } from "next/navigation";
 import { prisma } from "../../../lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 
 export const createThread = async (model: string, userId?: string) => {
   const create = await prisma.threads.create({
@@ -25,7 +26,7 @@ export const createThread = async (model: string, userId?: string) => {
 
 export const deleteThread = async (
   threadId: string,
-  currentPath: ParamValue,
+  currentPath: ParamValue
 ) => {
   await prisma.threads.delete({
     where: {
@@ -44,15 +45,26 @@ export const deleteThread = async (
 export const generateTitle = async (threadId: string, prompt: string) => {
   const { text } = await generateText({
     model: gateway("openai/gpt-4o-mini"),
-    prompt,
-    system: `\n
-          - you will generate a short title based on the first message a user begins a conversation with
-          - ensure it is not more than 8 words long
-          - the title should be a summary of the user's message
-          - do not use quotes or colons
-          - do not make the title too generic or too short
-          - you can use emojis or emoticons if you want
-          - if you use emojis, always put emoji at the start of the title`,
+    prompt: `Here are the first messages of the conversation: ${prompt}. Generate a title that accurately represents what this conversation is about based on the messages provided.`,
+    system: `
+    You are tasked with generating a concise, descriptive title for a chat conversation based on the initial messages. The title should:
+
+1. Be 2-6 words long
+2. Capture the main topic or question being discussed
+3. Be clear and specific
+4. Use title case (capitalize first letter of each major word)
+5. Not include quotation marks or special characters
+6. Be professional and appropriate
+7. You may use emojis or emoticons if you want
+
+Examples of good titles:
+- "Python Data Analysis Help"
+- "React Component Design"
+- "Travel Planning Italy"
+- "Budget Spreadsheet Formula"
+- "Career Change Advice"
+
+Generate a title that accurately represents what this conversation is about based on the messages provided.`,
   });
 
   await prisma.threads.update({
@@ -82,10 +94,11 @@ export const getTitle = async (threadId: string) => {
   return thread.title;
 };
 
-export const getThread = async (clerkId: string) => {
+export const getThread = async () => {
+  const { userId } = await auth();
   const thread = await prisma.threads.findMany({
     where: {
-      userId: clerkId,
+      userId,
     },
     orderBy: {
       createdAt: "desc",
@@ -98,13 +111,13 @@ export const getThread = async (clerkId: string) => {
   return thread;
 };
 
-export const getThreadMessage = async(threadId: string) => {
+export const getThreadMessage = async (threadId: string) => {
   const threadMessage = await prisma.messages.findMany({
     where: {
       threadId,
     },
-    include:{
-      parts:true
+    include: {
+      parts: true,
     },
     orderBy: {
       createdAt: "asc",

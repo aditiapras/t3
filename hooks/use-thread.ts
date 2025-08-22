@@ -5,11 +5,14 @@ import useSWRImmutable from "swr/immutable";
 import { getThread, getThreadMessage } from "@/app/chat/actions/actions";
 
 // fetcher-nya langsung panggil server action
-const fetcher = (clerkId: string) => getThread(clerkId);
+const fetcher = () => getThread();
 const fetcherMessage = (threadId: string) => getThreadMessage(threadId);
 
-export function useThreads(clerkId: string) {
-  const { data, error, isLoading, mutate } = useSWRImmutable("threads", fetcher);
+export function useThreads() {
+  const { data, error, isLoading, mutate } = useSWRImmutable(
+    "threads",
+    fetcher
+  );
 
   return {
     threads: data ?? [],
@@ -20,7 +23,10 @@ export function useThreads(clerkId: string) {
 }
 
 export function useThreadMessage(threadId: string) {
-  const { data, error, isLoading, mutate } = useSWRImmutable(threadId, fetcherMessage);
+  const { data, error, isLoading, mutate } = useSWRImmutable(
+    threadId,
+    fetcherMessage
+  );
 
   // Transform database messages to UIMessage format for useChat compatibility
   const transformedMessages: UIMessage[] = (data ?? []).map(
@@ -44,7 +50,7 @@ export function useThreadMessage(threadId: string) {
           text: part.text || "",
         };
       }),
-    }),
+    })
   );
 
   return {

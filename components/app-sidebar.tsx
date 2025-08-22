@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { Button } from "./ui/button";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -35,6 +36,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
           </SidebarMenuItem>
         </SidebarMenu>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <Link href="/chat" className="w-full">
+              <Button variant="default" className="w-full">
+                New Thread
+              </Button>
+            </Link>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavProjects />
@@ -42,12 +52,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroup className="mt-auto">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/chat">
-                    <Settings2 className="size-4" />
-                    Settings
-                  </Link>
-                </SidebarMenuButton>
+                <Link href="/chat">
+                  <Settings2 className="size-4" />
+                  Settings
+                </Link>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroup>
