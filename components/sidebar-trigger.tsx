@@ -15,7 +15,7 @@ export default function TriggerSidebar() {
       <div className="px-2">
         <div className="flex items-center gap-1 bg-border/80 backdrop-blur-sm rounded-md p-1">
           <SidebarTrigger />
-          {state === "collapsed" && (
+          {(state === "collapsed" || isMobile) && (
             <Link href="/chat">
               <Button size={"icon"} className="size-7" variant={"ghost"}>
                 <PlusIcon />

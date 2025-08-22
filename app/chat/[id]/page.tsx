@@ -12,7 +12,6 @@ type Props = {
   };
 };
 
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
 
@@ -31,6 +30,7 @@ export default async function Page({ params }: Props) {
   const transformedMessages: UIMessage[] = (threadMessage ?? []).map(
     (dbMessage: any) => ({
       id: dbMessage.messageId,
+      model: dbMessage.model,
       role: dbMessage.role as "user" | "assistant" | "system",
       parts: dbMessage.parts.map((part: any) => {
         if (part.type === "text") {
@@ -49,7 +49,7 @@ export default async function Page({ params }: Props) {
           text: part.text || "",
         };
       }),
-    }),
+    })
   );
 
   return (

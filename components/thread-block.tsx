@@ -26,7 +26,7 @@ import {
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
 import { Response } from "@/components/ai-elements/response";
-import { useThreadMessage, useThreads } from "@/hooks/use-thread";
+import { useThreads } from "@/hooks/use-thread";
 import {
   Reasoning,
   ReasoningContent,
@@ -39,6 +39,18 @@ const models = [
     name: "GPT-OSS-120B",
   },
   {
+    id: "openai/gpt-5",
+    name: "GPT-5",
+  },
+  {
+    id: "openai/gpt-5-nano",
+    name: "GPT-5 nano",
+  },
+  {
+    id: "openai/gpt-5-mini",
+    name: "GPT-5 mini",
+  },
+  {
     id: "openai/gpt-4o-mini",
     name: "GPT-4o Mini",
   },
@@ -47,8 +59,32 @@ const models = [
     name: "GPT-4o",
   },
   {
+    id: "anthropic/claude-3.5-sonnet",
+    name: "Claude 3.5 Sonnet",
+  },
+  {
+    id: "anthropic/claude-3.7-sonnet",
+    name: "Claude 3.7 Sonnet",
+  },
+  {
+    id: "anthropic/claude-sonnet-4",
+    name: "Claude Sonnet 4",
+  },
+  {
     id: "alibaba/qwen-3-235b",
-    name: "Qwen3 235B A22B Instruct 2507",
+    name: "Qwen3 235B Instruct",
+  },
+  {
+    id: "alibaba/qwen3-coder",
+    name: "Qwen3 Coder",
+  },
+  {
+    id: "deepseek/deepseek-r1",
+    name: "DeepSeek R1",
+  },
+  {
+    id: "deepseek/deepseek-v1",
+    name: "DeepSeek V3.1",
   },
   {
     id: "moonshotai/kimi-k2",
@@ -58,11 +94,22 @@ const models = [
 
 export default function ThreadBlock({ threadMessage }: { threadMessage: any }) {
   const [prompt, setPrompt] = useState("");
-  const [model, setModel] = useState<string>(models[0].id);
+
+  // Get the model from the last message, fallback to first model in array
+  const getDefaultModel = () => {
+    if (threadMessage && threadMessage.length > 0) {
+      const lastMessage = threadMessage[threadMessage.length - 1];
+      if (lastMessage?.model) {
+        return lastMessage.model;
+      }
+    }
+    return models[0].id;
+  };
+
+  const [model, setModel] = useState<string>(getDefaultModel());
   const { messages, sendMessage, status, setMessages } = useChat();
   const hasInitialized = useRef(false);
   const { id } = useParams();
-  const { user } = useUser();
   const { mutateThreads } = useThreads();
   // const { messages: threadMessage, isLoading: isLoadingThreadMessage } = useThreadMessage(id as string);
 
@@ -84,7 +131,7 @@ export default function ThreadBlock({ threadMessage }: { threadMessage: any }) {
         setModel(initialModel);
         sendMessage(
           { text: initialMessage },
-          { body: { model: initialModel, threadId: id } },
+          { body: { model: initialModel, threadId: id } }
         );
         generateTitle(id as string, initialMessage).then(() => {
           mutateThreads();
