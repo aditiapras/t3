@@ -5,10 +5,10 @@ import useSWRImmutable from "swr/immutable";
 import { getThread, getThreadMessage } from "@/app/chat/actions/actions";
 
 // fetcher-nya langsung panggil server action
-const fetcher = () => getThread();
+const fetcher = (clerkId: string) => getThread(clerkId);
 const fetcherMessage = (threadId: string) => getThreadMessage(threadId);
 
-export function useThreads() {
+export function useThreads(clerkId: string) {
   const { data, error, isLoading, mutate } = useSWRImmutable("threads", fetcher);
 
   return {

@@ -7,10 +7,11 @@ import type { ParamValue } from "next/dist/server/request/params";
 import { redirect } from "next/navigation";
 import { prisma } from "../../../lib/prisma";
 
-export const createThread = async (model: string) => {
+export const createThread = async (model: string, userId?: string) => {
   const create = await prisma.threads.create({
     data: {
       model,
+      userId,
     },
     select: {
       threadId: true,
@@ -81,8 +82,11 @@ export const getTitle = async (threadId: string) => {
   return thread.title;
 };
 
-export const getThread = async () => {
+export const getThread = async (clerkId: string) => {
   const thread = await prisma.threads.findMany({
+    where: {
+      userId: clerkId,
+    },
     orderBy: {
       createdAt: "desc",
     },

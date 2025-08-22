@@ -1,14 +1,17 @@
 "use client";
 
-import { Command } from "lucide-react";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { ArrowRight, Command, Settings2 } from "lucide-react";
 import Link from "next/link";
 import type * as React from "react";
 import { NavProjects } from "@/components/nav-projects";
 import {
   Sidebar,
   SidebarContent,
+  SidebarGroup,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
@@ -35,6 +38,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavProjects />
+        <SignedIn>
+          <SidebarGroup className="mt-auto">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/chat">
+                    <Settings2 className="size-4" />
+                    Settings
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        </SignedIn>
+        <SignedOut>
+          <SidebarGroup className="mt-auto">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/sign-in">
+                    <ArrowRight className="size-4" />
+                    Sign In
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        </SignedOut>
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

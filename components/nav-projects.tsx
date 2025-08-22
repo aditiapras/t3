@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import { Loader2, MoreHorizontal, Pin, TextCursor, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -23,8 +24,9 @@ import {
 import { useThreads } from "@/hooks/use-thread";
 
 export function NavProjects() {
+  const { user } = useUser();
   const { isMobile } = useSidebar();
-  const { threads, isLoading, mutateThreads } = useThreads();
+  const { threads, isLoading, mutateThreads } = useThreads(user?.id || "");
   const { id } = useParams();
 
   const handleDeleteThread = async (threadId: string) => {
@@ -38,7 +40,7 @@ export function NavProjects() {
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Threads</SidebarGroupLabel>
       <SidebarMenu>
-        {threads.map(({ threadId, title }) => (
+        {user && threads?.map(({ threadId, title }) => (
           <SidebarMenuItem key={threadId}>
             <SidebarMenuButton asChild>
               <Link href={`/chat/${threadId}`}>

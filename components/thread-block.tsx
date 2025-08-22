@@ -1,5 +1,6 @@
 "use client";
 import { useChat } from "@ai-sdk/react";
+import { useUser } from "@clerk/nextjs";
 import { GlobeIcon, MicIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -55,14 +56,15 @@ const models = [
   },
 ];
 
-export default function ThreadBlock() {
+export default function ThreadBlock({ threadMessage }: { threadMessage: any }) {
   const [prompt, setPrompt] = useState("");
   const [model, setModel] = useState<string>(models[0].id);
   const { messages, sendMessage, status, setMessages } = useChat();
   const hasInitialized = useRef(false);
   const { id } = useParams();
-  const { mutateThreads } = useThreads();
-  const { messages: threadMessage, isLoading: isLoadingThreadMessage } = useThreadMessage(id as string);
+  const { user } = useUser();
+  const { mutateThreads } = useThreads(user?.id as string);
+  // const { messages: threadMessage, isLoading: isLoadingThreadMessage } = useThreadMessage(id as string);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,20 +101,24 @@ export default function ThreadBlock() {
   const hasLoadedMessages = useRef(false);
 
   useEffect(() => {
-    if (threadMessage && threadMessage.length > 0 && !isLoadingThreadMessage && !hasLoadedMessages.current) {
+    if (
+      threadMessage &&
+      threadMessage.length > 0 &&
+      !hasLoadedMessages.current
+    ) {
       setMessages(threadMessage);
       hasLoadedMessages.current = true;
     }
-  }, [threadMessage, isLoadingThreadMessage, setMessages]);
+  }, [threadMessage, setMessages]);
 
   // Reset the loaded flag when thread ID changes
   useEffect(() => {
     hasLoadedMessages.current = false;
   }, []);
 
-  if (isLoadingThreadMessage) {
-    return null
-  }
+  // if (isLoadingThreadMessage) {
+  //   return null
+  // }
 
   return (
     <div className="flex flex-col flex-1 h-full justify-center">

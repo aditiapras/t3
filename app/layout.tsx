@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Onest } from "next/font/google";
 import "./globals.css";
+import {
+  ClerkProvider
+} from '@clerk/nextjs'
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -23,12 +26,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${onest.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+
+      <html lang="en">
+        <body
+          className={`${onest.variable} ${geistMono.variable} antialiased`}
+        >
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

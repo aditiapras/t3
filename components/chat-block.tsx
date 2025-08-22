@@ -1,4 +1,5 @@
 "use client";
+import { useUser } from "@clerk/nextjs";
 import { GlobeIcon } from "lucide-react";
 import { useState } from "react";
 import { createThread } from "@/app/chat/actions/actions";
@@ -42,12 +43,13 @@ const models = [
 export default function ChatBlock() {
   const [prompt, setPrompt] = useState("");
   const [model, setModel] = useState<string>(models[0].id);
+  const { user } = useUser();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     localStorage.setItem("model", model);
     localStorage.setItem("prompt", prompt);
-    await createThread(model);
+    await createThread(model, user?.id as string);
     setPrompt("");
   };
   return (
