@@ -63,7 +63,7 @@ export default function ThreadBlock({ threadMessage }: { threadMessage: any }) {
   const hasInitialized = useRef(false);
   const { id } = useParams();
   const { user } = useUser();
-  const { mutateThreads } = useThreads(user?.id as string);
+  const { mutateThreads } = useThreads();
   // const { messages: threadMessage, isLoading: isLoadingThreadMessage } = useThreadMessage(id as string);
 
   const handleSubmit = (e: React.FormEvent) => {

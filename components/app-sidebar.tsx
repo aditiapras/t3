@@ -9,6 +9,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
+  SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -39,9 +40,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <Link href="/chat" className="w-full">
-              <Button variant="default" className="w-full">
-                New Thread
-              </Button>
+              <Button className="w-full">New Thread</Button>
             </Link>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -50,28 +49,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects />
         <SignedIn>
           <SidebarGroup className="mt-auto">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <Link href="/chat">
-                  <Settings2 className="size-4" />
-                  Settings
-                </Link>
-              </SidebarMenuItem>
-            </SidebarMenu>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild size="sm">
+                    <Link href={"/settings"}>
+                      <Settings2 className="size-4" />
+                      Settings
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
           </SidebarGroup>
         </SignedIn>
         <SignedOut>
           <SidebarGroup className="mt-auto">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/sign-in">
-                    <ArrowRight className="size-4" />
-                    Sign In
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild size="sm">
+                    <Link href={"/sign-in"}>
+                      <ArrowRight className="size-4" />
+                      Sign In
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
           </SidebarGroup>
         </SignedOut>
       </SidebarContent>
