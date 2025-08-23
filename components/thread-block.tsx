@@ -1,6 +1,5 @@
 "use client";
 import { useChat } from "@ai-sdk/react";
-import { useUser } from "@clerk/nextjs";
 import { GlobeIcon, MicIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -33,66 +32,72 @@ import {
   ReasoningTrigger,
 } from "./ai-elements/reasoning";
 
-const models = [
-  {
-    id: "openai/gpt-oss-120b",
-    name: "GPT-OSS-120B",
-  },
-  {
-    id: "openai/gpt-5",
-    name: "GPT-5",
-  },
-  {
-    id: "openai/gpt-5-nano",
-    name: "GPT-5 nano",
-  },
-  {
-    id: "openai/gpt-5-mini",
-    name: "GPT-5 mini",
-  },
-  {
-    id: "openai/gpt-4o-mini",
-    name: "GPT-4o Mini",
-  },
-  {
-    id: "openai/gpt-4o",
-    name: "GPT-4o",
-  },
-  {
-    id: "anthropic/claude-3.5-sonnet",
-    name: "Claude 3.5 Sonnet",
-  },
-  {
-    id: "anthropic/claude-3.7-sonnet",
-    name: "Claude 3.7 Sonnet",
-  },
-  {
-    id: "anthropic/claude-sonnet-4",
-    name: "Claude Sonnet 4",
-  },
-  {
-    id: "alibaba/qwen-3-235b",
-    name: "Qwen3 235B Instruct",
-  },
-  {
-    id: "alibaba/qwen3-coder",
-    name: "Qwen3 Coder",
-  },
-  {
-    id: "deepseek/deepseek-r1",
-    name: "DeepSeek R1",
-  },
-  {
-    id: "deepseek/deepseek-v1",
-    name: "DeepSeek V3.1",
-  },
-  {
-    id: "moonshotai/kimi-k2",
-    name: "Kimi K2",
-  },
-];
+// const models = [
+//   {
+//     id: "openai/gpt-oss-120b",
+//     name: "GPT-OSS-120B",
+//   },
+//   {
+//     id: "openai/gpt-5",
+//     name: "GPT-5",
+//   },
+//   {
+//     id: "openai/gpt-5-nano",
+//     name: "GPT-5 nano",
+//   },
+//   {
+//     id: "openai/gpt-5-mini",
+//     name: "GPT-5 mini",
+//   },
+//   {
+//     id: "openai/gpt-4o-mini",
+//     name: "GPT-4o Mini",
+//   },
+//   {
+//     id: "openai/gpt-4o",
+//     name: "GPT-4o",
+//   },
+//   {
+//     id: "anthropic/claude-3.5-sonnet",
+//     name: "Claude 3.5 Sonnet",
+//   },
+//   {
+//     id: "anthropic/claude-3.7-sonnet",
+//     name: "Claude 3.7 Sonnet",
+//   },
+//   {
+//     id: "anthropic/claude-sonnet-4",
+//     name: "Claude Sonnet 4",
+//   },
+//   {
+//     id: "alibaba/qwen-3-235b",
+//     name: "Qwen3 235B Instruct",
+//   },
+//   {
+//     id: "alibaba/qwen3-coder",
+//     name: "Qwen3 Coder",
+//   },
+//   {
+//     id: "deepseek/deepseek-r1",
+//     name: "DeepSeek R1",
+//   },
+//   {
+//     id: "deepseek/deepseek-v1",
+//     name: "DeepSeek V3.1",
+//   },
+//   {
+//     id: "moonshotai/kimi-k2",
+//     name: "Kimi K2",
+//   },
+// ];
 
-export default function ThreadBlock({ threadMessage }: { threadMessage: any }) {
+interface Model {
+  modelId: string;
+  name: string;
+}
+
+
+export default function ThreadBlock({ threadMessage, models }: { threadMessage: any[], models: Model[] }) {
   const [prompt, setPrompt] = useState("");
 
   // Get the model from the last message, fallback to first model in array
@@ -103,7 +108,7 @@ export default function ThreadBlock({ threadMessage }: { threadMessage: any }) {
         return lastMessage.model;
       }
     }
-    return models[0].id;
+    return models[0]?.modelId || '';
   };
 
   const [model, setModel] = useState<string>(getDefaultModel());
@@ -111,11 +116,12 @@ export default function ThreadBlock({ threadMessage }: { threadMessage: any }) {
   const hasInitialized = useRef(false);
   const { id } = useParams();
   const { mutateThreads } = useThreads();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   // const { messages: threadMessage, isLoading: isLoadingThreadMessage } = useThreadMessage(id as string);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (prompt.trim()) {
+    if (prompt.trim() && model) {
       sendMessage({ text: prompt }, { body: { model, threadId: id } });
       setPrompt("");
     }
@@ -131,7 +137,7 @@ export default function ThreadBlock({ threadMessage }: { threadMessage: any }) {
         setModel(initialModel);
         sendMessage(
           { text: initialMessage },
-          { body: { model: initialModel, threadId: id } }
+          { body: { model: initialModel, threadId: id } },
         );
         generateTitle(id as string, initialMessage).then(() => {
           mutateThreads();
@@ -162,6 +168,21 @@ export default function ThreadBlock({ threadMessage }: { threadMessage: any }) {
   useEffect(() => {
     hasLoadedMessages.current = false;
   }, []);
+
+  // Auto-scroll to bottom when messages change or streaming
+  useEffect(() => {
+    const scrollToBottom = () => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    // Only scroll if there are messages or streaming is active
+    if (messages.length > 0 || status === 'streaming') {
+      scrollToBottom();
+    }
+  }, [messages.length, status]);
+
 
   // if (isLoadingThreadMessage) {
   //   return null
@@ -197,6 +218,7 @@ export default function ThreadBlock({ threadMessage }: { threadMessage: any }) {
             </Message>
           ))}
           {status === "streaming" && <Loader className="px-4" />}
+          <div ref={messagesEndRef} />
         </ConversationContent>
         <ConversationScrollButton className="absolute top-4 left-[50%] translate-x-[-50%] rounded-full" />
       </Conversation>
@@ -231,8 +253,8 @@ export default function ThreadBlock({ threadMessage }: { threadMessage: any }) {
                   <PromptInputModelSelectContent>
                     {models.map((model) => (
                       <PromptInputModelSelectItem
-                        key={model.id}
-                        value={model.id}
+                        key={model.modelId}
+                        value={model.modelId}
                       >
                         {model.name}
                       </PromptInputModelSelectItem>
@@ -240,7 +262,7 @@ export default function ThreadBlock({ threadMessage }: { threadMessage: any }) {
                   </PromptInputModelSelectContent>
                 </PromptInputModelSelect>
               </PromptInputTools>
-              <PromptInputSubmit disabled={!prompt || !model} />
+              <PromptInputSubmit disabled={!prompt && status !== 'streaming'} status={status} />
             </PromptInputToolbar>
           </PromptInput>
         </div>

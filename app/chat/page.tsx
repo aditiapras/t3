@@ -1,16 +1,22 @@
 import type { Metadata } from "next";
 import ChatBlock from "@/components/chat-block";
+import { getModels } from "../settings/actions";
 
 export const metadata: Metadata = {
   title: "Chat",
   description: "Chat with AI",
 };
 
-export default function page() {
+export default async function page() {
+  const models = await getModels();
+  const formatModels = models.map((model) => ({
+    modelId: model.modelId,
+    name: model.name,
+  }));
   return (
     <div className="flex flex-1 flex-col gap-4 relative">
       <div className="max-w-4xl mx-auto relative size-full h-full">
-        <ChatBlock />
+        <ChatBlock models={formatModels} />
       </div>
     </div>
   );

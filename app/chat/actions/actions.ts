@@ -1,12 +1,12 @@
 "use server";
 
 import { gateway } from "@ai-sdk/gateway";
+import { auth } from "@clerk/nextjs/server";
 import { generateText } from "ai";
 import { revalidatePath } from "next/cache";
 import type { ParamValue } from "next/dist/server/request/params";
 import { redirect } from "next/navigation";
 import { prisma } from "../../../lib/prisma";
-import { auth } from "@clerk/nextjs/server";
 
 export const createThread = async (model: string, userId?: string) => {
   const create = await prisma.threads.create({
@@ -26,7 +26,7 @@ export const createThread = async (model: string, userId?: string) => {
 
 export const deleteThread = async (
   threadId: string,
-  currentPath: ParamValue
+  currentPath: ParamValue,
 ) => {
   await prisma.threads.delete({
     where: {
@@ -53,16 +53,16 @@ export const generateTitle = async (threadId: string, prompt: string) => {
 2. Capture the main topic or question being discussed
 3. Be clear and specific
 4. Use title case (capitalize first letter of each major word)
-5. Not include quotation marks or special characters
+5. Do not include quotation marks or special characters
 6. Be professional and appropriate
-7. You may use emojis or emoticons if you want
+7. You may use emojis or emoticons if you want to make it more engaging
 
 Examples of good titles:
-- "Python Data Analysis Help"
-- "React Component Design"
-- "Travel Planning Italy"
-- "Budget Spreadsheet Formula"
-- "Career Change Advice"
+- Python Data Analysis Help
+- React Component Design
+- Travel Planning Italy
+- Budget Spreadsheet Formula
+- Career Change Advice
 
 Generate a title that accurately represents what this conversation is about based on the messages provided.`,
   });

@@ -1,6 +1,7 @@
 import type { UIMessage } from "ai";
 import type { Metadata } from "next";
 import { getThreadMessage, getTitle } from "@/app/chat/actions/actions";
+import { getModels } from "@/app/settings/actions";
 import ThreadBlock from "@/components/thread-block";
 
 type Props = {
@@ -24,15 +25,47 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+interface DbMessage {
+  messageId: string;
+  model: string;
+  role: string;
+  parts: Array<{
+    type: string;
+    text: string;
+  }>;
+}
+
+interface Model {
+  modelId: string;
+  name: string;
+}
+
+async function getModelsData() {
+  const models = await getModels();
+  const formatModels = models.map((model: Model) => ({
+    modelId: model.modelId,
+    name: model.name,
+  }));
+  return formatModels;
+}
+
+async function getThreadMessageData(id: string) {
+  const threadMessage = await getThreadMessage(id);
+  return threadMessage;
+}
+
 export default async function Page({ params }: Props) {
   const { id } = await params;
-  const threadMessage = await getThreadMessage(id);
+  const [models, threadMessage] = await Promise.all([
+    getModelsData(),
+    getThreadMessageData(id),
+  ]);
   const transformedMessages: UIMessage[] = (threadMessage ?? []).map(
-    (dbMessage: any) => ({
+    (dbMessage: DbMessage) => ({
       id: dbMessage.messageId,
       model: dbMessage.model,
       role: dbMessage.role as "user" | "assistant" | "system",
-      parts: dbMessage.parts.map((part: any) => {
+      parts: dbMessage.parts.map((part: { type: string; text: string }) => {
         if (part.type === "text") {
           return {
             type: "text" as const,
@@ -49,13 +82,13 @@ export default async function Page({ params }: Props) {
           text: part.text || "",
         };
       }),
-    })
+    }),
   );
 
   return (
     <div className="flex flex-1 flex-col gap-4 relative">
       <div className="max-w-4xl mx-auto relative size-full h-full">
-        <ThreadBlock threadMessage={transformedMessages} />
+        <ThreadBlock threadMessage={transformedMessages} models={models} />
       </div>
     </div>
   );

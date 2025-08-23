@@ -1,12 +1,14 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { ClerkLoaded, UserButton } from "@clerk/nextjs";
 import { PlusIcon } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
 export default function TriggerSidebar() {
   const { state, isMobile } = useSidebar();
+  const pathname = usePathname();
   return (
     <header
       suppressHydrationWarning
@@ -16,11 +18,11 @@ export default function TriggerSidebar() {
         <div className="flex items-center gap-1 bg-border/80 backdrop-blur-sm rounded-md p-1">
           <SidebarTrigger />
           {(state === "collapsed" || isMobile) && (
-            <Link href="/chat">
-              <Button size={"icon"} className="size-7" variant={"ghost"}>
+            <Button size={"icon"} className="size-7" variant={"ghost"} disabled={pathname === "/chat"}>
+              <Link href="/chat">
                 <PlusIcon />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           )}
         </div>
       </div>
